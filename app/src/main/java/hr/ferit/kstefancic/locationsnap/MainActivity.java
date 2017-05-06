@@ -9,6 +9,9 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.AudioManager;
+import android.media.SoundPool;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -32,6 +35,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOError;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,6 +43,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int RQT_LOCATION_PERMISSION = 10;
+    private static final String NO_PERMISSION_TV_MESSAGE = "Unable to read Your location!";
     TextView mTvLocation, mTvAddress;
     LocationListener mLocationListener;
     LocationManager mLocationManager;
@@ -46,6 +51,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     MapFragment mMapFragment;
     MarkerOptions mCurrentLocationMarker;
     private GoogleMap.OnMapClickListener mCustomOnMapClickListener;
+    SoundPool mSoundPool;
+    boolean mLoaded = false;
+    HashMap<Integer,Integer> mSoundMap = new HashMap<>();
 
 
     @Override
@@ -61,7 +69,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void loadSounds() {
-        this.m
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            this.mSoundPool = new SoundPool.Builder().setMaxStreams(10).build();
+        }
+        else
+            this.mSoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC,0);
+
+        this.mSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                mLoaded=true;
+            }
+        });
+        this.mSoundMap.put(R.raw.notification,this.mSoundPool.load(this, R.raw.notification,1));
     }
 
     @Override
@@ -113,10 +133,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onMapClick(LatLng latLng) {
                 MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_round));
-                markerOptions.title("I'm here");
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.google_location));
+                markerOptions.title("Your marker");
+                markerOptions.snippet(getAddressFromLocation(latLng));
                 markerOptions.position(latLng);
                 mGoogleMap.addMarker(markerOptions);
+                if(mLoaded)
+                    playSound(R.raw.notification);
             }
         };
     }
@@ -156,11 +179,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void askForPermission() {
         boolean shouldExplain = ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (shouldExplain) {
-            Log.d("Permission", "Permission should be explained, - don't show again not clicked.");
             this.displayDialog();
         } else {
-            Log.d("Permission", "Permission not granted. User pressed deny and don't show again.");
-            mTvLocation.setText("Sorry, we really need that permission");
+            mTvLocation.setText(NO_PERMISSION_TV_MESSAGE);
+            mTvAddress.setText(NO_PERMISSION_TV_MESSAGE);
         }
     }
 
@@ -193,25 +215,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mTvLocation.setText(stringBuilder.toString());
     }
 
-    private void updateLocationText(Location location) {
+    private String getAddressFromLocation (LatLng latLng){
+
+        String address=null;
         if (Geocoder.isPresent()) {
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
             try {
-                List<Address> nearbyAddress = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                List<Address> nearbyAddress = geocoder.getFromLocation(latLng.latitude,latLng.longitude, 1);
                 if (nearbyAddress.size() > 0) {
                     StringBuilder stringBuilder = new StringBuilder();
                     Address nearestAddress = nearbyAddress.get(0);
-                    stringBuilder.append(nearestAddress.getAddressLine(0)).append("\n")
-                            .append(nearestAddress.getLocality()).append("\n")
+                    stringBuilder.append(nearestAddress.getAddressLine(0)).append(", ")
+                            .append(nearestAddress.getLocality()).append(", ")
                             .append(nearestAddress.getCountryName());
-                    mTvAddress.setText(stringBuilder.toString());
+                    address = stringBuilder.toString();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
+            return address;
+    }
+
+    private void updateLocationText(Location location) {
+       mTvAddress.setText(getAddressFromLocation(new LatLng(location.getLatitude(),location.getLongitude())));
     }
 
     @Override
@@ -263,31 +291,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void setMarker(Location location) {
         mCurrentLocationMarker = new MarkerOptions();
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        mCurrentLocationMarker.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_round));
+        mCurrentLocationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.current_location));
         mCurrentLocationMarker.title("I'm here!");
-        if (Geocoder.isPresent()) {
-            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        mCurrentLocationMarker.snippet(getAddressFromLocation(new LatLng(location.getLatitude(),location.getLongitude())));
+        mCurrentLocationMarker.position(latLng);
+        mGoogleMap.addMarker(mCurrentLocationMarker);
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+    }
 
-
-            List<Address> nearbyAddress = null;
-            try {
-                nearbyAddress = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                if (nearbyAddress.size() > 0) {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    Address nearestAddress = nearbyAddress.get(0);
-                    stringBuilder.append(nearestAddress.getAddressLine(0)).append(", ")
-                            .append(nearestAddress.getLocality()).append(", ")
-                            .append(nearestAddress.getCountryName());
-                    mCurrentLocationMarker.snippet(stringBuilder.toString());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            mCurrentLocationMarker.position(latLng);
-            mGoogleMap.addMarker(mCurrentLocationMarker);
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
-
-        }
+    private void playSound(int notification) {
+        int soundID = this.mSoundMap.get(notification);
+        this.mSoundPool.play(soundID,1,1,1,0,1f);
     }
 }
