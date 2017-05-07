@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="margin">10dp</dimen>
+    <dimen name="addressTxtSize">20sp</dimen>
+    <dimen name="locationTxtSize">15sp</dimen>
+    <item name="tvWeight" type="dimen" format="float">0.45</item>
+    <item name="fragmentWeight" type="dimen" format="float">0.1</item>
+</resources>

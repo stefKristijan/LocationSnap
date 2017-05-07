@@ -27,19 +27,14 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.StringBuilderPrinter;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -50,9 +45,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -335,8 +328,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void updateLocationDisplay(Location location) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Lat: ").append(location.getLatitude()).append("\n");
-        stringBuilder.append("Lon: ").append(location.getLongitude()).append("\n");
+        stringBuilder.append("Latitude: ").append(location.getLatitude()).append("\n");
+        stringBuilder.append("Longitude: ").append(location.getLongitude()).append("\n");
         mTvLocation.setText(stringBuilder.toString());
     }
 
