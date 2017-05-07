@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         {
             imagesFolder.mkdirs();
         }
-        File image = new File(imagesFolder,fileName+".png");//File.createTempFile(fileName, ".png", imagesFolder);
+        File image = new File(imagesFolder,fileName+".png");
 
         mCurrentPhotoPath = image.getAbsolutePath();
         return image;

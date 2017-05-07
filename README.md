@@ -1,2 +1,13 @@
 # LocationSnap
 Application for taking a picture of your location
+
+Aplikacija LocationSnap je aplikacija za prikazivanje trenutnog položaja na Google mapama te slikanje slike èije je ime adresa lokacije na kojoj se korisnik nalazi. 
+Za ispravan rad aplikacije u AndroidManifest.xml bilo je potrebno dodati dopuštenja za lokaciju, Internet, pisanje u memoriju i korištenje kamere te meta podatke o verziji gms-a i korisnièki API kljuè.
+
+U glavnoj aktivnosti se veæinom koristi kod s laboratorijske vježbe 5 iz kolegija Razvoja mobilnih aplikacija. Prvo je pri pokretanju aplikacije potrebno provjeriti je li korisnik dopustio korištenje lokacije, ukoliko nije izvodi se metoda requestPermission() koja zahtjeva dopuštenje za korištenje lokacije i dobiva odgovor pomoæu preoptereæene metode onRequestPermissionResult(). Ukoliko je korištenje lokacije nije dopušteno, aplikacija pita korisnika za dopuštenje. Ukoliko je korištenje lokacije dopušteno izvodi se metoda startTracking() kojom se poèinje pratiti lokacija korisnika, ako je došlo do promjene lokacije izvodi se metoda onLocationChange() ugniježðene klase SimpleLocationListener. Za svaku promjenu lokacije izvode se metode updateLocationDisplay() koja u TextView upisuje geografsku dužinu i širinu nove lokacije, updateLocationText() koja u TextView upisuje adresu lokacije te setMarker() kojom se postavlja marker na trenutnu lokaciju. Na korisnièkom suèelju se nalazi i FloatingActionButton koji prilikom klika poziva funkciju takePicture(). U metodi takePicture() se stvara novi Intent za slikanje kamerom nakon èega se poziva metoda createImageFile() u kojoj se stvara nova datoteka na naèin da se stvori novi objekt klase File koji u konstruktor prima put do direktorija za spremanje i naziv mape, to je zapravo mapa u koju se sprema slika. Provjerava se postoji li ta mapa, ako ne postoji stvori se nova mapa, a ako postoji stvara se novi objekt klase File koji u konstruktoru prima mapu i ime slike. Povratkom u metodu takePicture() se na temelju objekta File koji predstavlja sliku stvara novi Uri objekt koji se stavlja kao Extra u Intent za slikanje kamerom. Pokreæe se aktivnost koja vraæa rezultat, a prilikom vraæanja rezultata (uspješnog slikanja) stvara se obavijest. Važno je nakon stvaranja slike osvježiti galeriju pomoæu klase MediaScannerConnection. Prilikom stvaranja obavijesti je Intent-u potrebno postaviti tip datoteke koji se èita, metodom setDataAndType(), kako bi znao kojom aplikacijom ga treba proèitati.
+
+Korišteni resursi:
+http://stackoverflow.com/questions/12995185/android-taking-photos-and-saving-them-with-a-custom-name-to-a-custom-destinati
+
+http://stackoverflow.com/questions/4144840/how-can-i-refresh-the-gallery-after-i-inserted-an-image-in-android
+
