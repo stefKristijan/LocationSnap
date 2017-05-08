@@ -42,6 +42,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.File;
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     LocationManager mLocationManager;
     GoogleMap mGoogleMap;
     MapFragment mMapFragment;
-    MarkerOptions mCurrentLocationMarker;
+    Marker mCurrentLocationMarker;
     private GoogleMap.OnMapClickListener mCustomOnMapClickListener;
     SoundPool mSoundPool;
     boolean mLoaded = false;
@@ -407,14 +408,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void setMarker(Location location) {
-        mCurrentLocationMarker = new MarkerOptions();
+        if(mCurrentLocationMarker!=null){
+            mCurrentLocationMarker.remove();
+            Log.d("Marker","Remove previous marker");
+        }
+        MarkerOptions markerOptions = new MarkerOptions();
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        mCurrentLocationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.current_location));
-        mCurrentLocationMarker.title("I'm here!");
-        mCurrentLocationMarker.snippet(getAddressFromLocation(new LatLng(location.getLatitude(),location.getLongitude())));
-        mCurrentLocationMarker.position(latLng);
-        mGoogleMap.addMarker(mCurrentLocationMarker);
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.current_location));
+        markerOptions.title("I'm here!");
+        markerOptions.snippet(getAddressFromLocation(new LatLng(location.getLatitude(),location.getLongitude())));
+        markerOptions.position(latLng);
+        markerOptions.visible(true);
+        mCurrentLocationMarker = mGoogleMap.addMarker(markerOptions);
+
     }
 
     private void playSound(int notification) {
